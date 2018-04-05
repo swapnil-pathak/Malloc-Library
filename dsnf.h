@@ -12,11 +12,6 @@
 #include <math.h>
 #include <stdint.h>
 
-//For each arena
-typedef struct ArenaHeader {
-  
-}arena_h_t;
-
 //For each block
 typedef struct MallocHeader {
   uint8_t status;
@@ -24,6 +19,11 @@ typedef struct MallocHeader {
   struct MallocHeader *next;
   struct MallocHeader *prev;
 }mall_h_t;
+
+//For each arena
+typedef struct ArenaHeader {
+  
+}arena_h_t;
 
 //Malloc stats
 typedef struct mallinfo {
