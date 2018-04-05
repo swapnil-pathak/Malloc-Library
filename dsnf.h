@@ -15,7 +15,8 @@
 //For each arena
 typedef struct ArenaHeader {
   
-};
+}arena_h_t;
+
 //For each block
 typedef struct MallocHeader {
   uint8_t status;
