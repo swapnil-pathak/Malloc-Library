@@ -4,6 +4,8 @@
 
 __thread mall_h_t *freeList[MAX_LEVEL + 1];
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+arena_h_t *arena_head = NULL;
+__thread arena_h_t *arena_to_thread = NULL;
 
 /*
 Makes the sbrk() system call and returns pointer to the address

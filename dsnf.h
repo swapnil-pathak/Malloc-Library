@@ -22,8 +22,13 @@ typedef struct MallocHeader {
 
 //For each arena
 typedef struct ArenaHeader {
-  
-}arena_h_t;
+  pthread_mutex_t arenalock;
+  mall_h_t *freeList[7];
+  void *startAddr;
+  void *endAddr;
+  void *nextArena;
+  void *prevArena;
+} arena_h_t;
 
 //Malloc stats
 typedef struct mallinfo {
@@ -45,6 +50,8 @@ typedef struct mallinfo {
 #define MAX_POWER 12
 #define MIN_BLOCK_SIZE 32
 #define MAX_BLOCK_SIZE PAGESIZE
+
+extern arena_h_t *arena_head;
 
 void *get_from_heap(size_t size);
 void *get_memory(size_t size);
