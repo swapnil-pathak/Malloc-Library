@@ -12,6 +12,10 @@
 #include <math.h>
 #include <stdint.h>
 
+//For each arena
+typedef struct ArenaHeader {
+  
+};
 //For each block
 typedef struct MallocHeader {
   uint8_t status;
