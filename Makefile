@@ -1,28 +1,31 @@
 CC=gcc
-CFLAGS=-g -O0 -fPIC -Werror -Wall
+CFLAGS=-g -O0 -fPIC -fno-builtin
+CFLAGS_AFT=-lm -lpthread
 
-TESTS=t-test1
-HEADERS=dsnf.h buddy.c malloc.c realloc.c free.c calloc.c posix_memalign.c memalign.c malloc_stats.c
+all: check
 
-all:	${TESTS} libmalloc.so
+default: check
 
 clean:
-	rm -rf *.o *.so ${TESTS}
+	rm -rf libmalloc.so *.o test1 t-test1
 
 lib: libmalloc.so
 
-libmalloc.so: buddy.c malloc.c realloc.c free.c calloc.c posix_memalign.c memalign.c malloc_stats.c
-	$(CC) $(CFLAGS) -shared -Wl,--unresolved-symbols=ignore-all buddy.c malloc.c realloc.c free.c calloc.c posix_memalign.c memalign.c malloc_stats.c -o $@
+libmalloc.so: malloc.o free.o calloc.o realloc.o memalign.o posix_memalign.o mallinfo.o
+	$(CC) -g -o0 -shared -Wl,--unresolved-symbols=ignore-all malloc.o free.o calloc.o realloc.o mallinfo.o -o libmalloc.so $(CFLAGS_AFT)
 
-%: %.c
-	$(CC) $(CFLAGS) $< -o $@ -lpthread
+t-test1: t-test1.o
+	$(CC) $(CFLAGS) $< -o $@ $(CFLAGS_AFT)
+
+gdb: libmalloc.so t-test1
+	gdb --args env LD_PRELOAD=./libmalloc.so ./t-test1
 
 # For every XYZ.c file, generate XYZ.o.
-%.o: %.c ${HEADERS}
-	$(CC) $(CFLAGS) $< -c -o $@ -lpthread
+%.o: %.c
+	$(CC) $(CFLAGS) $< -c -o $@ $(CFLAGS_AFT)
 
-check:	libmalloc.so t-test1
+check:	clean libmalloc.so t-test1
 	LD_PRELOAD=`pwd`/libmalloc.so ./t-test1
 
-dist: clean
-	dir=`basename $$PWD`; cd ..; tar cvf $$dir.tar ./$$dir; gzip $$dir.tar
+dist:
+dir=`basename $$PWD`; cd ..; tar cvf $$dir.tar ./$$dir; gzip $$dir.tar
