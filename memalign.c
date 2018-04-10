@@ -1,23 +1,35 @@
 #include <stdio.h>
-#include "dsnf.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include <math.h>
+#include <sys/mman.h>
+#include <errno.h>
 
-void *memalign(size_t alignment, size_t size) {
+#define BASE 2
+#define LOG(size) (ceil((log(size) / log(BASE))))
+#define PG_SIZE 4096
 
-  void *ptr = NULL;
+/*
+ytes=6188, alignment=32
+The  obsolete  function memalign() allocates size bytes and returns a pointer to the allocated memory.
+The memory address will be a multiple of alignment, which must be a power of two
 
-  if(alignment && size) {
-    size_t offset = alignment - 1;
-    void *memory1 = malloc(size + offset);
-    void *memory2 = malloc(size);
-    if(memory1 && memory2) {
-      if((uintptr_t)memory2 % alignment != 0) {
-        ptr = (void*)((uintptr_t)memory1 + alignment - ((uintptr_t)memory1 % alignment));
-        memcpy(memory2, ptr, size);
-        free_memory(memory1);
-        return memory2;
-      }
-      return memory2;
-    }
+*/
+void *memalign(size_t alignment, size_t size){
+  void *memptr;
+  if( size%2 != 0 ){
+    return memptr;
   }
-  return ptr;
+
+  return malloc(size);
+/*
+  if(res != 0){
+    return NULL;
+  }else{
+    return memptr;
+  }
+  */
+
 }

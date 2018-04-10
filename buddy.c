@@ -7,6 +7,7 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 arena_h_t *arena_head = NULL;
 __thread arena_h_t *arena_to_thread = NULL;
 
+int num_threads = 0;
 /*
 Makes the sbrk() system call and returns pointer to the address
 */
@@ -30,7 +31,31 @@ void *get_memory(size_t size) {
 
   size += sizeof(mall_h_t);
 
-  size_t pgsize = get_page_size(size);
+/*
+New entry for arena
+*/
+  if (arena_head == NULL) {
+    init_arena();
+  }
+  size_t pgsize = get_page_size(size); // old
+
+  //Get number of cores
+  int cores = sysconf(_SC_NPROCESSORS_ONLN);
+  int no_of_arenas = num_threads % cores;
+
+  arena_h_t *arena_assign;
+
+  if (arena_to_thread == NULL) {
+    pthread_mutex_lock(&lock);
+    arena_assign = getarena(num_threads);
+    arena_to_thread = arena_assign;
+    pthread_mutex_unlock(&lock);
+  } else {
+    arena_assign = arena_to_thread;
+  }
+
+// New end here
+
   if(pgsize > (MAX_BLOCK_SIZE / 2)) {
     return get_from_mmap(pgsize);
   }
