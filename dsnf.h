@@ -20,7 +20,7 @@ typedef struct MallocHeader{
 	int *blockMinAddr;
 	int arena_num;
 	int dummy;
-} mall_h_t	;
+} mall_h_t;
 
 typedef struct ArenaHeader{
 	pthread_mutex_t arena_lock;
