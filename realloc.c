@@ -1,29 +1,36 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include <math.h>
+#include <sys/mman.h>
+#include <errno.h>
 #include "dsnf.h"
 
-void *realloc(void *ptr, size_t size) {
-  if (ptr == NULL) {
-    return get_memory(size);
+#define BASE 2
+#define LOG(size) (ceil((log(size) / log(BASE))))
+#define PG_SIZE 4096
+
+void *realloc(void *ptr, size_t size){
+  if(ptr == NULL){
+    return malloc(size);
   }
-  if (size == 0) {
-    free_memory(ptr);
-    return NULL;
+
+  mall_h_t *originalBlock = ptr - sizeof(mall_h_t);
+  
+  size_t sizeOfOriginalBlock = originalBlock->size;
+  size_t sizeToCopy = size > sizeOfOriginalBlock ? sizeOfOriginalBlock : size;
+
+  void *blockToReturn = malloc(size);
+
+  if( sizeToCopy == size){
+    blockToReturn = memcpy(blockToReturn, ptr, size);
+  }else{
+    blockToReturn = memcpy(blockToReturn, ptr, sizeToCopy);
   }
-  size += sizeof(mall_h_t);
-  mall_h_t *tmp = (mall_h_t *) ((char *) ptr - sizeof(mall_h_t));
-  int oldlevel = tmp->level;
-  int oldSize = 1 << (oldlevel + MIN_POWER);
-  int newlevel = get_level(size);
-  if (oldlevel >= newlevel) {
-    return ptr;
-  }
-  void *newmem;
-  size -= sizeof(mall_h_t);
-  newmem = malloc(size);
-  if (!newmem) {
-    return NULL;
-  }
-  memcpy(newmem, ptr, oldSize - sizeof(mall_h_t));
+ 
   free(ptr);
-  return newmem;
+
+  return blockToReturn + sizeof(blockToReturn);
 }

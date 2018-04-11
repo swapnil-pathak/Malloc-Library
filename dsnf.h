@@ -1,63 +1,64 @@
-#ifndef DSNF_H
-#define DSNF_H
-
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <assert.h>
-#include <errno.h>
+#include <stdio.h>
 #include <pthread.h>
-#include <math.h>
-#include <stdint.h>
 
-//For each block
-typedef struct MallocHeader {
-  uint8_t status;
-  uint8_t level;  
-  struct MallocHeader *next;
-  struct MallocHeader *prev;
-}mall_h_t;
+#ifndef __DSNF_H__
+#define __DSNF_H__
 
-//Malloc stats
+#define BASE 2
+
+#define LOG(size) (ceil((log(size) / log(BASE))))
+#define PG_SIZE 4096
+#define FREE_LOG(PG_SIZE)
+
+
+typedef struct MallocHeader{
+	size_t size;
+	struct node *next;
+	struct node *prev;
+	int status;
+	int *blockMaxAddr;
+	int *blockMinAddr;
+	int arena_num;
+	int dummy;
+} mall_h_t;
+
+typedef struct ArenaHeader{
+	pthread_mutex_t arena_lock;
+	mall_h_t *freeList[13];
+	int lists_in_arena;
+	void *startAddress;
+	void *endAddress;
+	void *nextArena;
+	void *prevArena;
+	size_t size;
+	int ordblks;   
+	int smblks;    
+	int hblks;     
+	int hblkhd;    
+	int uordblks;  
+  int fordblks;
+} arena_h_t;
+
 typedef struct mallinfo {
-  int ar_sbrk;
-  int ar_mmap;
-  int ar_no;
-  int blk_no;
-  int used_blks;
-  int free_blks;
-  int req_alloc;
-  int req_free;
-} mallinfo_t;
 
+	int arena;     
+	int ordblks;   
+  int smblks;    
+  int hblks;     
+  int hblkhd;    
+  int usmblks;   
+  int fsmblks;   
+  int uordblks;  
+  int fordblks;  
+  int keepcost;  
+};
 
-#define PAGESIZE sysconf(_SC_PAGESIZE) //Pagesize needed
-#define MIN_LEVEL 0
-#define MAX_LEVEL 6
-#define MIN_POWER 5
-#define MAX_POWER 12
-#define MIN_BLOCK_SIZE 32
-#define MAX_BLOCK_SIZE PAGESIZE
+extern __thread mall_h_t *head;
+extern arena_h_t *arena_head;
+extern __thread arena_h_t *arena_to_thread;
+extern pthread_mutex_t mutex;
+extern int num_threads;
 
-void *get_from_heap(size_t size);
-void *get_memory(size_t size);
-void split_buddy(mall_h_t **freeList, int level, int split_level);
-size_t get_page_size(size_t size);
-int get_level(size_t size);
-void *get_from_mmap(size_t pageSize);
-void free_memory(void* ptr);
-mall_h_t *find_buddy(mall_h_t* releasedBlock);
-void *realloc(void *ptr, size_t size);
-void *calloc(size_t nmemb, size_t size);
-void free(void *ptr);
-void *malloc(size_t size);
-void *reallocarray(void *ptr, size_t nmemb, size_t size);
-void *memalign(size_t alignment, size_t size);
-int posix_memalign(void **memptr, size_t alignment, size_t size);
+extern int lists_in_arena;
 
-mallinfo_t mallinfo(void);
-void malloc_stats();
-void print();
 #endif

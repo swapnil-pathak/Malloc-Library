@@ -1,15 +1,28 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include <math.h>
+#include <sys/mman.h>
+#include <errno.h>
 #include "dsnf.h"
 
-void *calloc(size_t nmemb, size_t size) {
-  if(nmemb==0||size==0) {
+#define BASE 2
+#define LOG(size) (ceil((log(size) / log(BASE))))
+#define PG_SIZE 4096
+
+void *calloc(size_t nmemb, size_t size){
+  if(nmemb == (size_t) 0 || size == (size_t) 0){
     return NULL;
   }
-  void *ptr;
-  size_t finalsize = nmemb * size;
-  if((ptr = get_memory(finalsize)) == NULL) {
-    return NULL;
+  int allocSize = nmemb * size;
+  void *blockToReturn = malloc(allocSize);
+
+
+  if( blockToReturn != NULL ){
+    
+    blockToReturn = memset(blockToReturn, 0, allocSize);
   }
-  memset(ptr, 0, finalsize);
-  return ptr;
+  return blockToReturn;
 }
