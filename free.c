@@ -138,8 +138,8 @@ mall_h_t* get_buddy(mall_h_t* nodeToFree){
 
     if(curr->status==0){
    
-      if( (nodeToFree->blockMaxAddr == curr->blockMaxAddr))
-        {
+      if( (nodeToFree->blockMaxAddr == curr->blockMaxAddr)
+        ){
        
         return curr;
       }
